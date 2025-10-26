@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using JournalTasks.Web.Components;
 using JournalTasks.Web.Components.Account;
 using JournalTasks.Web.Data;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddAuthentication(options => {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
