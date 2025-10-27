@@ -5,4 +5,6 @@ namespace JournalTasks.Web.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<ApplicationUser>(options) {
+    
+    public DbSet<TaskModel> TaskModels { get; set; }
 }
