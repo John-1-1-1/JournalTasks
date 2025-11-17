@@ -81,6 +81,37 @@ namespace JournalTasks.Web.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("JournalTasks.Web.Data.DeltaTimes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("TaskModelId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskModelId");
+
+                    b.ToTable("DeltaTimes");
+                });
+
             modelBuilder.Entity("JournalTasks.Web.Data.TaskModel", b =>
                 {
                     b.Property<int>("Id")
@@ -94,6 +125,9 @@ namespace JournalTasks.Web.Migrations
                     b.Property<DateTime>("End")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsTracking")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("Start")
                         .HasColumnType("TEXT");
 
@@ -102,6 +136,7 @@ namespace JournalTasks.Web.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -239,11 +274,20 @@ namespace JournalTasks.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("JournalTasks.Web.Data.DeltaTimes", b =>
+                {
+                    b.HasOne("JournalTasks.Web.Data.TaskModel", null)
+                        .WithMany("DeltaTimesList")
+                        .HasForeignKey("TaskModelId");
+                });
+
             modelBuilder.Entity("JournalTasks.Web.Data.TaskModel", b =>
                 {
                     b.HasOne("JournalTasks.Web.Data.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -297,6 +341,11 @@ namespace JournalTasks.Web.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("JournalTasks.Web.Data.TaskModel", b =>
+                {
+                    b.Navigation("DeltaTimesList");
                 });
 #pragma warning restore 612, 618
         }

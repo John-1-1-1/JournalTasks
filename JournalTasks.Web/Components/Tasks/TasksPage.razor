@@ -1,0 +1,156 @@
+@page "/tasks-page"
+
+@using JournalTasks.Web.Components.Shared
+@using Microsoft.EntityFrameworkCore
+@using JournalTasks.Web.Data
+@using JournalTasks.Web.Services
+@using JournalTasks.Web.Services.DataModels
+@using Microsoft.AspNetCore.Authorization
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+@rendermode InteractiveServer
+@inject IUserService UserService
+@attribute [Authorize]
+  
+
+<RadzenScheduler @bind-Date="@date"
+                 Data="@DailyTasks"
+                 StartProperty="Start"
+                 EndProperty="End"
+                 TextProperty="Title"
+                 TItem="TaskModel"
+                 AppointmentSelect=@OnAppointmentSelect
+                 AppointmentRender=@OnAppointmentRender
+                 Style="height: 500px; margin-top: 20px;">
+
+    <RadzenDayView/>
+    <RadzenWeekView/>
+    <RadzenMonthView/>
+</RadzenScheduler>
+
+<hr/>
+
+<RadzenButton Icon="add_circle_outline" Text="Добавить новую задачу" Click="@AddNewTask"
+              ButtonStyle="ButtonStyle.Primary" Class="mb-3"/>
+
+<Modal @ref="modal">
+    <Body>
+    @if (currentTask != null) {
+        <div class="edit-form-overlay">
+            <div class="edit-form">
+                <RadzenTemplateForm TItem="TaskModel" Data="@currentTask" Submit="@SaveTask">
+                    <RadzenFieldset Text="Детали задачи">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <RadzenLabel Text="Заголовок"/>
+                                <RadzenTextBox @bind-Value="@currentTask.Title" Class="w-100"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <RadzenLabel Text="Начало"/>
+                                <RadzenDatePicker @bind-Value="@currentTask.Start" ShowTime="true"
+                                                  DateFormat="dd.MM.yyyy HH:mm" Class="w-100"/>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <RadzenLabel Text="Конец"/>
+                                <RadzenDatePicker @bind-Value="@currentTask.End" ShowTime="true"
+                                                  DateFormat="dd.MM.yyyy HH:mm" Class="w-100"/>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <RadzenLabel Text="Цвет задачи"/>
+                                <RadzenColorPicker @bind-Value="@currentTask.Color"
+                                                   ShowButton="true"
+                                                   Class="w-100"
+                                                   AllowClear="true"
+                                                   Placeholder="Выберите цвет"/>
+                            </div>
+                        </div>
+                    </RadzenFieldset>
+                    <div class="mt-3">
+                        <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить"
+                                      ButtonStyle="ButtonStyle.Success"/>
+                        <RadzenButton Click="@(() => isEditing = false)" Text="Отмена" ButtonStyle="ButtonStyle.Light"
+                                      Class="ms-2"/>
+                    </div>
+                </RadzenTemplateForm>
+            </div>
+        </div>
+    }
+    </Body>
+</Modal>
+
+@code {
+
+    private Modal modal;
+
+    DateTime date = DateTime.Today;
+
+    IList<TaskModel> DailyTasks = new List<TaskModel>();
+
+    TaskModel currentTask;
+
+    bool isEditing = false;
+
+
+    private string? UserId;
+
+    protected async override void OnInitialized() {
+        UserId = await UserService.GetUserIdAsync();
+
+        DailyTasks = TaskModelHelper.GetTaskByUser(DbFactory, UserId);
+    }
+
+
+    void AddNewTask() {
+        currentTask = new TaskModel {
+            Id = 0,
+            Title = "Новая задача",
+            Start = DateTime.Now.AddHours(1).Date.AddHours(10),
+            End = DateTime.Now.AddHours(1).Date.AddHours(11),
+            UserId = UserId,
+        };
+        modal.Open();
+        isEditing = false;
+    }
+
+
+    void OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<TaskModel> args) {
+        currentTask = args.Data;
+        isEditing = true;
+        modal.Open();
+    }
+
+    void SaveTask() {
+        modal.Close();
+        if (currentTask != null) {
+            if (isEditing) {
+                TaskModelHelper.UpdateTask(DbFactory, currentTask);
+            }
+            else {
+                TaskModelHelper.CreateTask(DbFactory, currentTask);
+            }
+        }
+
+        isEditing = false;
+        currentTask = null;
+
+        StateHasChanged();
+    }
+
+    void Delete(TaskModel task) {
+        DailyTasks.Remove(task);
+
+        if (currentTask != null && currentTask.Id == task.Id) {
+            isEditing = false;
+            currentTask = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<TaskModel> obj) {
+        obj.Attributes["style"] = "background: " + obj.Data.Color;
+    }
+
+} 

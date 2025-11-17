@@ -8,4 +8,8 @@ public class TaskModel
     public DateTime End { get; set; }
     public string Color { get; set; } = "blue-task";
     public ApplicationUser User { get; set; }
+    public string UserId { get; set; }
+    public bool IsTracking { get; set; }
+
+    public List<DeltaTimes> DeltaTimesList { get; set; } = new List<DeltaTimes>();
 }

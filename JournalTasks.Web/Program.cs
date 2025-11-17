@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using JournalTasks.Web.Components;
 using JournalTasks.Web.Components.Account;
 using JournalTasks.Web.Data;
+using JournalTasks.Web.Services;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddRadzenComponents();
 
@@ -27,7 +29,7 @@ builder.Services.AddAuthentication(options => {
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

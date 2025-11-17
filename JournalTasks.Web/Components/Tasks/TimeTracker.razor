@@ -1,0 +1,94 @@
+@page "/time-tracker"
+
+@using JournalTasks.Web.Data
+@using JournalTasks.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+
+@inject IUserService UserService
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+
+<RadzenDataGrid
+    GridLines="DataGridGridLines.Vertical"
+    Data="@employees"
+    TItem="TaskModel"
+    AllowColumnResize="true"
+    ColumnResized=@OnColumnResized>
+
+
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(TaskModel.Id)"
+                              Filterable="false"
+                              Title="ID"
+                              Width="80px"
+                              TextAlign="TextAlign.Center"/>
+        <RadzenDataGridColumn Property="@nameof(TaskModel.Title)" Title="Наименование"/>
+        <RadzenDataGridColumn Property="@nameof(TaskModel.Start)" Width="200px" Title="Затраченное время"/>
+        <RadzenDataGridColumn Width="70px" Title="Трекер" Frozen="true" TextAlign="TextAlign.Center">
+            <Template Context="taskItem">
+                <RadzenButton Icon="@(taskItem.IsTracking ? "stop" : "play_arrow")"
+                              ButtonStyle="@(taskItem.IsTracking ? ButtonStyle.Danger : ButtonStyle.Success)"
+                              Size="ButtonSize.ExtraSmall"
+                              Click="@(() => ToggleTracker(taskItem))"
+                              @onclick:stopPropagation="true"
+                              ToolTip="@(taskItem.IsTracking ? "Остановить" : "Запустить")"/>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+
+    <Template Context="parentTask">
+            <RadzenDataGrid Data="@parentTask.DeltaTimesList" TItem="DeltaTimes" AllowPaging="false">
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(DeltaTimes.StartDate)" Title="Начало" Width="100px"/>
+                    <RadzenDataGridColumn Property="@nameof(DeltaTimes.EndDate)" Title="Окончание" Width="200px"/>
+                </Columns>
+            </RadzenDataGrid>
+ 
+    </Template>
+
+</RadzenDataGrid>
+
+@code {
+
+
+    IQueryable<TaskModel> employees;
+
+    void OnColumnResized(DataGridColumnResizedEventArgs<TaskModel> args) {
+        Console.WriteLine($"Resized {args.Column.Title} to {args.Width} pixels");
+    }
+
+    protected override async Task OnInitializedAsync() {
+        await base.OnInitializedAsync();
+        var userId = await UserService.GetUserIdAsync();
+        var context = DbFactory.CreateDbContext();
+        employees = context.TaskModels.Include(t => t.DeltaTimesList).Where(t => t.User.Id == userId);
+    }
+
+
+    void ToggleTracker(TaskModel task) {
+        
+        var context = DbFactory.CreateDbContext();
+        
+        task.IsTracking = !task.IsTracking;
+
+        if (task.IsTracking) {
+            task.DeltaTimesList.Add(new DeltaTimes() {
+                StartDate = DateTime.Now
+            });
+        }
+        else {
+            foreach (var deltaTime in task.DeltaTimesList.Where(dt => dt.EndDate == null)) {
+                deltaTime.EndDate = DateTime.Now;
+            }  
+            context.DeltaTimes.UpdateRange(task.DeltaTimesList);
+        }
+
+        context.TaskModels.Update(task);
+        context.SaveChanges();
+    }
+
+}
