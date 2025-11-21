@@ -1,6 +1,6 @@
-@page "/tasks-page"
-
-@using JournalTasks.Web.Components.Shared
+ 
+@using JournalTasks.Web.Components.Journal.Colors
+@using JournalTasks.Web.Components.Shared 
 @using Microsoft.EntityFrameworkCore
 @using JournalTasks.Web.Data
 @using JournalTasks.Web.Data.Tables
@@ -31,8 +31,13 @@
 
 <hr/>
 
+<RadzenButton Icon="add_circle_outline" Text="Добавить категорию" Click="@AddColor"
+              ButtonStyle="ButtonStyle.Primary" Class="mb-3"/>
+
 <RadzenButton Icon="add_circle_outline" Text="Добавить новую задачу" Click="@AddNewTask"
               ButtonStyle="ButtonStyle.Primary" Class="mb-3"/>
+
+<ColorsModal UserId="@UserId" @ref="_colorModal"></ColorsModal>
 
 <Modal @ref="modal">
     <Body>
@@ -58,14 +63,22 @@
                                 <RadzenDatePicker @bind-Value="@currentTask.End" ShowTime="true"
                                                   DateFormat="dd.MM.yyyy HH:mm" Class="w-100"/>
                             </div>
-                            @* <div class="col-md-6 mb-3"> *@
-                            @*     <RadzenLabel Text="Цвет задачи"/> *@
-                            @*     <RadzenColorPicker @bind-Value="@currentTask.Color" *@
-                            @*                        ShowButton="true" *@
-                            @*                        Class="w-100" *@
-                            @*                        AllowClear="true" *@
-                            @*                        Placeholder="Выберите цвет"/> *@
-                            @* </div> *@
+                            
+                            <div class="row">
+
+                                <div class="col-md-12 mb-3">
+                                    <RadzenLabel Text="Категория задачи (цвет)" />
+                                    <RadzenDropDown @bind-Value="currentTask.TaskCategoryId"
+                                                    Data="@categories"
+                                                    TextProperty="Name"
+                                                    ValueProperty="Id"
+                                                    Style="width: 100%" 
+                                                    Placeholder="Выберите категорию" />
+                                </div>
+
+
+                            </div>
+                            
                         </div>
                     </RadzenFieldset>
                     <div class="mt-3">
@@ -88,17 +101,19 @@
     DateTime date = DateTime.Today;
 
     IList<TaskModel> DailyTasks = new List<TaskModel>();
-
+    ColorsModal _colorModal;
     TaskModel currentTask;
 
     bool isEditing = false;
 
-
+    List<TaskCategories> categories; 
     private string? UserId;
 
     protected async override void OnInitialized() {
         UserId = await UserService.GetUserIdAsync();
 
+        var context = await DbFactory.CreateDbContextAsync();
+        categories = context.TasksCategories.Where(t => t.UserId == UserId).ToList();
         DailyTasks = TaskModelHelper.GetTaskByUser(DbFactory, UserId);
     }
 
@@ -150,8 +165,13 @@
         StateHasChanged();
     }
 
+    private void AddColor() {
+        _colorModal.Open();
+        
+    }
+    
     private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<TaskModel> obj) {
-        obj.Attributes["style"] = "background: " + obj.Data.Color;
+        obj.Attributes["style"] = "background: " + obj.Data?.TaskCategory?.Color;
     }
 
 } 

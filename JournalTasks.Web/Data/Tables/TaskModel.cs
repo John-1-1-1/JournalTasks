@@ -6,13 +6,12 @@ public class TaskModel
     public string Title { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
-    public Colors Color { get; set; } 
-    public Colors ColorID { get; set; } 
+    public TaskCategories TaskCategory { get; set; } 
+    public int TaskCategoryId { get; set; } 
     public ApplicationUser User { get; set; }
-    public string UserId { get; set; }
     
-    public ApplicationUser Creator { get; set; }
-    public string CreatorId { get; set; }
+    public string UserId { get; set; }
+     
 
     public bool Active { get; set; }
     public bool AutoTask { get; set; }

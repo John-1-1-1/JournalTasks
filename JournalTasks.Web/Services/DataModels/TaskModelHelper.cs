@@ -9,7 +9,9 @@ public class TaskModelHelper {
 
     public static IList<TaskModel> GetTaskByUser(IDbContextFactory<ApplicationDbContext>  dbContextFactory, string? userId) {
         var context = dbContextFactory.CreateDbContext();
-        return context.TaskModels.Where(t => t.User.Id == userId).ToList();
+        return context.TaskModels
+            .Include(t => t.TaskCategory)
+            .Where(t => t.User.Id == userId).ToList();
     }
     
     public static void CreateTask(IDbContextFactory<ApplicationDbContext> dbContextFactory,  TaskModel taskModel) {

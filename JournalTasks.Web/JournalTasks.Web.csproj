@@ -20,7 +20,17 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Data\Migrations\" />
+      <AdditionalFiles Include="Components\Journal\Tasks\TasksPage.razor" />
+      <AdditionalFiles Include="Components\Journal\Tasks\TimeTracker.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\JournalTasks.Kernel\JournalTasks.Kernel.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Journal\TasksPool\Modal\ModalAddTaskPool.razor" />
+      <_ContentIncludedByDefault Remove="Components\Journal\TasksPool\TasksPoolPage.razor" />
     </ItemGroup>
 
 </Project>

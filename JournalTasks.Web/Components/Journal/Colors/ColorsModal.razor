@@ -1,0 +1,94 @@
+@using JournalTasks.Web.Components.Shared
+@using JournalTasks.Web.Data
+@using JournalTasks.Web.Data.Tables
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+<Modal @ref="_modal">
+    <Title>
+        Категории
+    </Title>
+    <Body>
+    <RadzenDataGrid Data="@_categoriesList" TItem="TaskCategories" AllowPaging="true" PageSize="10" FilterMode="FilterMode.Simple">
+        <Columns>
+            <RadzenDataGridColumn TItem="TaskCategories" Property="Name" Title="Наименование"/>
+            <RadzenDataGridColumn TItem="TaskCategories" Property="Color" Title="Цвет">
+                <Template Context="category">
+                    <div style="width: 30px; height: 20px; background-color:@category.Color; border: 1px solid #ccc;"></div>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+
+    <hr/>
+
+    <h3>Добавить категорию</h3>
+
+    <EditForm Model="@_categories" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <div class="form-group">
+            <label for="description">Наименование категории:</label>
+            <InputText id="description" class="form-control" @bind-Value="_categories.Name"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <RadzenLabel Text="Цвет задачи"/>
+            <RadzenColorPicker
+                @bind-Value="@_categories.Color"
+                ShowButton="true"
+                Class="w-100"
+                AllowClear="true"
+                Placeholder="Выберите цвет"/>
+        </div>
+    </EditForm>
+
+    <button type="button" class="btn btn-success" @onclick="HandleValidSubmit">Сохранить</button>
+
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Выйти</button>
+        <div></div>
+    </Footer>
+</Modal>
+
+@code {
+
+    private Modal _modal;
+    private TaskCategories _categories = new TaskCategories();
+    [Parameter] public string UserId { get; set; }
+    private ICollection<TaskCategories> _categoriesList;
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+        LoadCategories();
+    }
+
+    private async Task HandleValidSubmit() {
+        var context = await DbFactory.CreateDbContextAsync();
+        _categories.UserId = UserId;
+        context.TasksCategories.Add(_categories);
+        context.SaveChanges();
+
+        LoadCategories();
+        StateHasChanged();
+    }
+
+    private async Task LoadCategories() {
+        var context = await DbFactory.CreateDbContextAsync();
+        _categoriesList = context.TasksCategories
+            .Where(t => t.UserId == UserId)
+            .ToList();
+    }
+
+    public void Open() {
+        _categories = new TaskCategories();
+        
+        _modal?.Open(); 
+        StateHasChanged();
+    }
+    
+    private void Cancel() {
+        _modal?.Close();
+        StateHasChanged();
+    }
+}
