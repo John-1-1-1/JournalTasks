@@ -1,4 +1,5 @@
 using JournalTasks.Web.Data;
+using JournalTasks.Web.Data.Tables;
 using Microsoft.EntityFrameworkCore;
 
 namespace JournalTasks.Web.Services.DataModels;

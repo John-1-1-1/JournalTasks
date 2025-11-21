@@ -3,6 +3,7 @@
 @using JournalTasks.Web.Components.Shared
 @using Microsoft.EntityFrameworkCore
 @using JournalTasks.Web.Data
+@using JournalTasks.Web.Data.Tables
 @using JournalTasks.Web.Services
 @using JournalTasks.Web.Services.DataModels
 @using Microsoft.AspNetCore.Authorization
@@ -57,14 +58,14 @@
                                 <RadzenDatePicker @bind-Value="@currentTask.End" ShowTime="true"
                                                   DateFormat="dd.MM.yyyy HH:mm" Class="w-100"/>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <RadzenLabel Text="Цвет задачи"/>
-                                <RadzenColorPicker @bind-Value="@currentTask.Color"
-                                                   ShowButton="true"
-                                                   Class="w-100"
-                                                   AllowClear="true"
-                                                   Placeholder="Выберите цвет"/>
-                            </div>
+                            @* <div class="col-md-6 mb-3"> *@
+                            @*     <RadzenLabel Text="Цвет задачи"/> *@
+                            @*     <RadzenColorPicker @bind-Value="@currentTask.Color" *@
+                            @*                        ShowButton="true" *@
+                            @*                        Class="w-100" *@
+                            @*                        AllowClear="true" *@
+                            @*                        Placeholder="Выберите цвет"/> *@
+                            @* </div> *@
                         </div>
                     </RadzenFieldset>
                     <div class="mt-3">

@@ -1,3 +1,4 @@
+using JournalTasks.Web.Data.Tables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,4 +9,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     
     public DbSet<TaskModel> TaskModels { get; set; }
     public DbSet<DeltaTimes> DeltaTimes { get; set; }
+    
+    public DbSet<UsersGroup> UsersGroups { get; set; }
+    public DbSet<TelegramAccount> TelegramAccounts { get; set; }
+    public DbSet<TaskPull> TaskPulls { get; set; }
+    public DbSet<Reminders> Reminders { get; set; }
+    public DbSet<Colors> Colors { get; set; }
+    public DbSet<AutoTask> AutoTasks { get; set; }
+
 }

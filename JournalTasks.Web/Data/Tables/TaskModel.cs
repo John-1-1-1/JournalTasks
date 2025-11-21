@@ -1,4 +1,4 @@
-namespace JournalTasks.Web.Data;
+namespace JournalTasks.Web.Data.Tables;
 
 public class TaskModel
 {
@@ -6,9 +6,16 @@ public class TaskModel
     public string Title { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
-    public string Color { get; set; } = "blue-task";
+    public Colors Color { get; set; } 
+    public Colors ColorID { get; set; } 
     public ApplicationUser User { get; set; }
     public string UserId { get; set; }
+    
+    public ApplicationUser Creator { get; set; }
+    public string CreatorId { get; set; }
+
+    public bool Active { get; set; }
+    public bool AutoTask { get; set; }
     public bool IsTracking { get; set; }
 
     public List<DeltaTimes> DeltaTimesList { get; set; } = new List<DeltaTimes>();
