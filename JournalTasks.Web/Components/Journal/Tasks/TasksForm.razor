@@ -1,0 +1,110 @@
+ 
+@using JournalTasks.Web.Components.Journal.Colors
+@using JournalTasks.Web.Components.Shared 
+@using Microsoft.EntityFrameworkCore
+@using JournalTasks.Web.Data
+@using JournalTasks.Web.Data.Tables
+@using JournalTasks.Web.Services
+@using JournalTasks.Web.Services.DataModels
+@using Microsoft.AspNetCore.Authorization
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+@rendermode InteractiveServer
+@inject IUserService UserService
+@attribute [Authorize]
+  
+
+<RadzenScheduler @bind-Date="@date"
+                 Data="@DailyTasks"
+                 StartProperty="Start"
+                 EndProperty="End"
+                 TextProperty="Title"
+                 TItem="TaskModel"
+                 AppointmentSelect=@OnAppointmentSelect
+                 AppointmentRender=@OnAppointmentRender
+                 Style="height: 500px; margin-top: 20px;">
+
+    <RadzenDayView/>
+    <RadzenWeekView/>
+    <RadzenMonthView/>
+</RadzenScheduler>
+
+<hr/>
+
+<RadzenButton Icon="add_circle_outline" Text="Добавить категорию" Click="@AddColor"
+              ButtonStyle="ButtonStyle.Primary" Class="mb-3"/>
+
+<RadzenButton Icon="add_circle_outline" Text="Добавить новую задачу" Click="@AddNewTask"
+              ButtonStyle="ButtonStyle.Primary" Class="mb-3"/>
+
+<ColorsModal UserId="@UserId" @ref="_colorModal"></ColorsModal>
+
+<AddTaskModal @ref="_addTaskModal"
+              UserId="@UserId" 
+              currentTask="@currentTask"
+              isEditing="@isEditing"></AddTaskModal>
+
+@code {
+
+    AddTaskModal _addTaskModal;
+    
+    private Modal modal;
+
+    DateTime date = DateTime.Today;
+
+    IList<TaskModel> DailyTasks = new List<TaskModel>();
+    ColorsModal _colorModal;
+    TaskModel currentTask;
+
+    bool isEditing = false;
+    private string? UserId;
+
+    protected async override void OnInitialized() {
+        UserId = await UserService.GetUserIdAsync();
+
+        DailyTasks = TaskModelHelper.GetTaskByUser(DbFactory, UserId);
+    }
+
+
+    void AddNewTask() {
+        currentTask = new TaskModel {
+            Id = 0,
+            Title = "Новая задача",
+            Start = DateTime.Now.AddHours(1).Date.AddHours(10),
+            End = DateTime.Now.AddHours(1).Date.AddHours(11),
+            UserId = UserId,
+        };
+        _addTaskModal.Open();
+        isEditing = false;
+    }
+
+
+    void OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<TaskModel> args) {
+        currentTask = args.Data;
+        isEditing = true;
+        modal.Open();
+    }
+
+
+
+    void Delete(TaskModel task) {
+        DailyTasks.Remove(task);
+
+        if (currentTask != null && currentTask.Id == task.Id) {
+            isEditing = false;
+            currentTask = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void AddColor() {
+        _colorModal.Open();
+        
+    }
+    
+    private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<TaskModel> obj) {
+        obj.Attributes["style"] = "background: " + obj.Data?.TaskCategory?.Color;
+    }
+
+} 
