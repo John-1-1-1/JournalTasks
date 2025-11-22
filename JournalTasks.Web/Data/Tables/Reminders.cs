@@ -7,5 +7,4 @@ public class Reminders {
     public DateTime Date { get; set; }
     public bool IsReminder { get; set; }
     public TaskModel Task { get; set; }
-    public TaskModel TaskId { get; set; }
 }

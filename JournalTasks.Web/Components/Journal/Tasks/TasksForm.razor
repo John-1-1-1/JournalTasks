@@ -47,8 +47,7 @@
 @code {
 
     AddTaskModal _addTaskModal;
-    
-    private Modal modal;
+     
 
     DateTime date = DateTime.Today;
 
@@ -68,8 +67,7 @@
 
     void AddNewTask() {
         currentTask = new TaskModel {
-            Id = 0,
-            Title = "Новая задача",
+            Id = 0, 
             Start = DateTime.Now.AddHours(1).Date.AddHours(10),
             End = DateTime.Now.AddHours(1).Date.AddHours(11),
             UserId = UserId,
@@ -82,7 +80,7 @@
     void OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<TaskModel> args) {
         currentTask = args.Data;
         isEditing = true;
-        modal.Open();
+        _addTaskModal.Open();
     }
 
 

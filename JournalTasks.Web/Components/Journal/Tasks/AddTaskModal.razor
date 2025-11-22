@@ -16,31 +16,61 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <RadzenLabel Text="Заголовок"/>
-                                <RadzenTextBox @bind-Value="@currentTask.Title" Class="w-100"/>
+                                <RadzenTextBox @bind-Value="@currentTask.Title" Name="TitleInput" Class="w-100"/>
+                                <RadzenRequiredValidator Component="TitleInput" Text="Заголовок задачи обязателен"  />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <RadzenLabel Text="Начало"/>
-                                <RadzenDatePicker @bind-Value="@currentTask.Start" ShowTime="true"
+                                <RadzenDatePicker @bind-Value="@currentTask.Start" Name="StartInput" ShowTime="true"
                                                   DateFormat="dd.MM.yyyy HH:mm" Class="w-100"/>
+                                <RadzenRequiredValidator Component="StartInput" Text="Дата начала обязательна"  />
                             </div>
+
+                            
                             <div class="col-md-6 mb-3">
                                 <RadzenLabel Text="Конец"/>
-                                <RadzenDatePicker @bind-Value="@currentTask.End" ShowTime="true"
+                                <RadzenDatePicker @bind-Value="@currentTask.End" Name="EndInput" ShowTime="true"
                                                   DateFormat="dd.MM.yyyy HH:mm" Class="w-100"/>
+                                <RadzenRequiredValidator Component="EndInput" Text="Дата окончания обязательна"  />
                             </div>
                             
                             <div class="row">
-
                                 <div class="col-md-12 mb-3">
                                     <RadzenLabel Text="Категория задачи (цвет)" />
                                     <RadzenDropDown @bind-Value="currentTask.TaskCategoryId"
                                                     Data="@categories"
+                                                    Name="CategoryInput"
                                                     TextProperty="Name"
                                                     ValueProperty="Id"
                                                     Style="width: 100%" 
-                                                    Placeholder="Выберите категорию" />
+                                                    AllowClear="true"
+                                                    Placeholder="Выберите категорию" >
+                                        
+                                        <Template Context="cat">
+                                            @{
+                                                var category = cat as TaskCategories;
+                                                <div style="display: flex; align-items: center;">
+                                                    <span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background-color: @category.Color; margin-right: 8px;"></span>
+                                                    <span>@category.Name</span>
+                                                </div>
+                                            }
+                                        </Template>
+
+                                        <ValueTemplate Context="cat">
+                                            @{
+                                                var category = cat as TaskCategories;
+                                                <div style="display: flex; align-items: center;">
+                                                    <span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background-color: @category.Color; margin-right: 8px;"></span>
+                                                    <span>@category.Name</span>
+                                                </div>
+                                            }
+                                        </ValueTemplate>
+                                        
+                                    </RadzenDropDown>
+                                    <RadzenRequiredValidator Component="CategoryInput" Text="Категория обязательна"  />
+                                    
                                 </div>
 
 
@@ -49,22 +79,95 @@
                         </div>
                     </RadzenFieldset>
                     <div class="mt-3">
-                        <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить"
+                        <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить изменения"
                                       ButtonStyle="ButtonStyle.Success"/>
-                        <RadzenButton Click="@Cancel" Text="Отмена" ButtonStyle="ButtonStyle.Light"
-                                      Class="ms-2"/>
                     </div>
                 </RadzenTemplateForm>
             </div>
         </div>
+        
+        
+       
+        
+        <RadzenPanel Style="margin-top: 15px" Text="Форма для создания задачи" AllowCollapse="true" Collapsed="true">
+            <div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <RadzenLabel Text="Заголовок" />
+                    </div>
+                    <div class="col-md-9">
+                        <RadzenTextBox @bind-Value="@newReminder.Title" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <RadzenLabel Text="Описание" />
+                    </div>
+                    <div class="col-md-9">
+                        <RadzenTextArea @bind-Value="@newReminder.Description" Style="width: 100%;" />
+                    </div>
+                </div>
+        
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <RadzenLabel Text="Дата" />
+                    </div>
+                    <div class="col-md-9">
+                        <RadzenDatePicker @bind-Value="@newReminder.Date" DateFormat="dd.MM.yyyy" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <RadzenButton Text="Сохранить" ButtonStyle="ButtonStyle.Success" />
+            </div>
+        </RadzenPanel>
+        
+        
+        
+        <RadzenFieldset Text="Напоминания по задаче"> 
+                    
+            @if (currentTask.RemindersList == null || !currentTask.RemindersList.Any())
+            {
+                <p class="text-center text-muted">Для этой задачи нет напоминаний.</p>
+            }
+            else
+            {
+                <RadzenDataGrid Data="@currentTask.RemindersList" TItem="Reminders" AllowSorting="true">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="Reminders" Property="Title" Title="Заголовок" Width="40%" />
+                        <RadzenDataGridColumn TItem="Reminders" Property="Date" Title="Дата" Width="30%">
+                            <Template Context="r">
+                                @r.Date.ToString("dd.MM.yyyy HH:mm")
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Reminders" Title="Активно" Width="10%" TextAlign="TextAlign.Center">
+                            <Template Context="r">
+                                <RadzenIcon Icon="@(r.IsReminder ? "alarm_on" : "alarm_off")" Style="@(r.IsReminder ? "color: green;" : "color: gray;")" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Reminders" Width="10%" TextAlign="TextAlign.Center" Frozen="true">
+                            <Template Context="r">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.ExtraSmall"  />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+        </RadzenFieldset>
     }
     </Body>
+    <Footer>
+        <RadzenButton Click="@Cancel" Text="Отмена" ButtonStyle="ButtonStyle.Light"
+                      Class="ms-2"/>
+    </Footer>
 </Modal>
 
 @code{
 
     [Parameter] public string UserId { get; set; }
 
+    Reminders newReminder = new Reminders();
+    
     List<TaskCategories> categories;
 
     private Modal modal;
